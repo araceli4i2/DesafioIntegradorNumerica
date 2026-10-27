@@ -927,135 +927,155 @@
        ========================================================================== -->
   <script>
     /**
-     * DEFINICIÓN DE LA BASE DE DATOS DE EJERCICIOS (19 AL 27) Y MÓDULO DE VALIDACIÓN
-     * Cada ejercicio cuenta con:
-     * - id, nombre, contexto físico real de ingeniería
-     * - fórmula LaTeX/texto
-     * - unidades físicas
-     * - datos equiespaciados compatibles por defecto con n=6 (múltiplo de 2 y 3)
-     * - valor analítico o de referencia para contrastar precisión con >= 6 decimales.
+     * =========================================================================
+     * BASE DE DATOS EXACTA DE PROBLEMAS: EJERCICIOS 19 AL 27 Y MÓDULO DE VALIDACIÓN
+     * =========================================================================
      */
     const EXERCISES_DATABASE = {
       19: {
-        title: "Ejercicio 19: Momento Flector en Viga por Fuerza Cortante",
-        unit: "kN·m",
-        yLabel: "Fuerza Cortante V(x) [kN]",
-        context: "En ingeniería estructural, una viga de 11 m de longitud está sometida a una carga distribuida. La fuerza cortante está descrita por V(x) = 5 + 0.25 x² (kN). Sabiendo que dM/dx = V(x), el momento flexionante total se obtiene por integración definida: M = M₀ + ∫₀¹¹ V(x) dx, con M₀ = 0.",
-        formula: "M = ∫₀¹¹ (5 + 0.25 x²) dx = [ 5x + (0.25/3)x³ ]₀¹¹ = 165.916667 kN·m",
-        exactValue: 5 * 11 + (0.25 / 3) * Math.pow(11, 3), // 165.91666666666666
-        a: 0,
-        b: 11,
-        n: 6,
-        func: (x) => 5 + 0.25 * x * x
+        title: "Ejercicio 19: Transporte Urbano - Distancia Recorrida",
+        unit: "(mi/h)·s [0.147072 mi / 776.54 ft]",
+        xLabel: "Tiempo t [s]",
+        yLabel: "Velocidad v(t) [mi/h]",
+        context: "La velocidad de un auto de carreras durante los primeros 7 s está dada por la tabla. Determine la distancia recorrida integrando v(t).",
+        formula: "d = ∫₀⁷ v(t) dt  [v en mi/h, t en s; 1 mi = 5280 ft, 1 h = 3600 s]",
+        fixedX: [0, 1, 2, 3, 4, 5, 6, 7],
+        fixedY: [0, 14, 39, 69, 95, 114, 129, 139],
+        exactValue: 529.458333, // Resultado obtenido por Regla Combinada Simpson (1/3 en [0,4] + 3/8 en [4,7])
+        isTabular: true
       },
       20: {
-        title: "Ejercicio 20: Trabajo en Proceso Termodinámico de un Gas",
-        unit: "kJ",
-        yLabel: "Presión P(V) [kPa]",
-        context: "En termodinámica aplicada, el trabajo W realizado durante la expansión cuasiestática de un gas confinado en un cilindro se calcula integrando la presión respecto al volumen: W = ∫ P(V) dV. Para este proceso politrópico, el volumen varía de 1.0 m³ a 7.0 m³.",
-        formula: "W = ∫₁⁷ 350 · V⁻¹·² dV = [ -1750 · V⁻⁰·² ]₁⁷ = 564.180902 kJ",
-        exactValue: 1750 * (1 - Math.pow(7, -0.2)), // 564.1809015
-        a: 1.0,
-        b: 7.0,
-        n: 6,
-        func: (V) => 350 / Math.pow(V, 1.2)
+        title: "Ejercicio 20: Ensayo de Elasticidad - Trabajo Realizado",
+        unit: "in·lb",
+        xLabel: "Deformación x [in]",
+        yLabel: "Fuerza F(x) [lb]",
+        context: "Una banda elástica se estira y se miden las fuerzas. Determine el trabajo realizado W = ∫ F(x) dx.",
+        formula: "W = ∫₀²·⁸ F(x) dx  [Fuerza F en lb, Deformación x en in, Trabajo en in·lb]",
+        fixedX: [0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8],
+        fixedY: [0, 0.85, 1.30, 1.60, 1.87, 2.14, 2.34, 2.52],
+        exactValue: 4.577167, // Resultado por Regla Combinada Simpson (1/3 en [0, 1.6] + 3/8 en [1.6, 2.8])
+        isTabular: true
       },
       21: {
-        title: "Ejercicio 21: Cinemática - Distancia Recorrida a partir de la Velocidad",
-        unit: "m",
-        yLabel: "Velocidad v(t) [m/s]",
-        context: "En dinámica vehicular, la distancia total s recorrida por un móvil en una fase de aceleración y frenado se obtiene integrando la función de velocidad respecto al tiempo: s = ∫₀¹² v(t) dt, donde v(t) = 3 + 2.5 t - 0.15 t² (m/s).",
-        formula: "s = ∫₀¹² (3 + 2.5 t - 0.15 t²) dt = [ 3t + 1.25 t² - 0.05 t³ ]₀¹² = 129.600000 m",
-        exactValue: 3 * 12 + 1.25 * Math.pow(12, 2) - 0.05 * Math.pow(12, 3), // 129.6
-        a: 0,
-        b: 12,
-        n: 6,
-        func: (t) => 3 + 2.5 * t - 0.15 * t * t
+        title: "Ejercicio 21: Perfil Topográfico - Área Bajo el Perfil",
+        unit: "u² (unidades de área)",
+        xLabel: "Distancia horizontal x [u]",
+        yLabel: "Cota de altura y(x) [u]",
+        context: "A partir de una gráfica de altura, estimar el área bajo el perfil entre x = 1 y x = 10.",
+        formula: "A = ∫₁¹⁰ y(x) dx  [n = 9 subintervalos, h = 1.0]",
+        fixedX: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        fixedY: [1.3, 3.7, 4.6, 4.4, 2.7, 2.5, 3.6, 5.3, 6.0, 5.9],
+        exactValue: 36.600000, // Exacto por Simpson 3/8 compuesto (n = 9 múltiplo de 3)
+        isTabular: true
       },
       22: {
-        title: "Ejercicio 22: Masa Total de una Barra con Densidad Variable",
-        unit: "kg",
-        yLabel: "Densidad lineal λ(x) [kg/m]",
-        context: "Se requiere evaluar la masa total m de una barra prismática de longitud L = 6 m. La densidad volumétrica del material varía según ρ(x) = 2400 + 300√x (kg/m³) y el área de la sección recta transversal constante es Ac = 0.025 m², por lo que la densidad lineal es λ(x) = ρ(x)·Ac.",
-        formula: "m = ∫₀⁶ (60 + 7.5 √x) dx = [ 60x + 5 x^(3/2) ]₀⁶ = 433.484692 kg",
-        exactValue: 360 + 30 * Math.sqrt(6), // 433.48469228
-        a: 0,
-        b: 6,
+        title: "Ejercicio 22: Cable Suspendido - Longitud de Catenaria",
+        unit: "m (unidades de longitud)",
+        xLabel: "Posición horizontal x [m]",
+        yLabel: "Integrando f(x) = cosh(x/24)",
+        context: "Un cable tiene forma de catenaria y = 24 cosh(x/24). Estimar su longitud entre x = -12 y x = 26. La integral a resolver es L = ∫₋₁₂²⁶ cosh(x/24) dx.",
+        formula: "L = ∫₋₁₂²⁶ cosh(x/24) dx = 24 [ sinh(26/24) - sinh(-12/24) ] ≈ 43.898841",
+        a: -12,
+        b: 26,
         n: 6,
-        func: (x) => 60 + 7.5 * Math.sqrt(x)
+        func: (x) => Math.cosh(x / 24),
+        exactValue: 24 * (Math.sinh(26 / 24) - Math.sinh(-12 / 24)),
+        isTabular: false
       },
       23: {
-        title: "Ejercicio 23: Flujo Vehicular en Hora Pico (Tráfico Urbano)",
-        unit: "vehículos",
-        yLabel: "Tasa de flujo q(t) [veh/min]",
-        context: "En ingeniería de transporte, el aforo de una intersección semaforizada durante un lapso de 90 minutos se modela a través de la tasa de flujo vehicular q(t) = 15 + 12·sin(π·t/90) + 4·cos(2π·t/90) (veh/min). El número total de vehículos que cruzaron la vía es N = ∫₀⁹⁰ q(t) dt.",
-        formula: "N = ∫₀⁹⁰ [ 15 + 12 sin(π t / 90) + 4 cos(2π t / 90) ] dt = 1350 + 2160/π = 2037.549354 vehículos",
-        exactValue: 1350 + 2160 / Math.PI, // 2037.549354
+        title: "Ejercicio 23: Red de Agua - Caudal en Tubería",
+        unit: "m³/s",
+        xLabel: "Radio r [m]",
+        yLabel: "Flujo diferencial 160π r (1 - r/0.25)^(1/7)",
+        context: "Determinar el caudal de una tubería con radio R = 0.25. La integral a resolver es Q = ∫₀⁰·²⁵ 160π r (1 - r/0.25)^(1/7) dr.",
+        formula: "Q = ∫₀⁰·²⁵ 160π r (1 - r/0.25)^(1/7) dr = 49π/12 ≈ 12.828170 m³/s",
         a: 0,
-        b: 90,
+        b: 0.25,
         n: 6,
-        func: (t) => 15 + 12 * Math.sin(Math.PI * t / 90) + 4 * Math.cos(2 * Math.PI * t / 90)
+        func: (r) => 160 * Math.PI * r * Math.pow(Math.max(0, 1 - r / 0.25), 1 / 7),
+        exactValue: (49 * Math.PI) / 12,
+        isTabular: false
       },
       24: {
-        title: "Ejercicio 24: Caudal Hidráulico en Canal de Sección Irregular",
-        unit: "m³/s",
-        yLabel: "Gasto unitario q_u(y) [m²/s]",
-        context: "En ingeniería hidráulica, el caudal total Q que fluye a través de la sección de un canal o río de ancho B = 12 m se calcula integrando el producto de la velocidad del agua por la profundidad local: Q = ∫₀¹² q_u(y) dy, con perfil parabólico amortiguado q_u(y) = 0.8·y·(12 - y)^0.8.",
-        formula: "Q = ∫₀¹² 0.8 · y · (12 - y)^0.8 dy ≈ 166.865648 m³/s",
-        exactValue: 166.865648, // Referencia numérica precisa de Gauss-Legendre
+        title: "Ejercicio 24: Diseño de Trayectoria - Longitud de Cardioide",
+        unit: "u (unidades de longitud)",
+        xLabel: "Parámetro angular t [rad]",
+        yLabel: "Integrando f(t) = 20 sin(t/2)",
+        context: "Representar una cardioide con b = 5 y estimar su longitud entre t = 0 y t = 2π. La integral simplificada a resolver es L = ∫₀²ᵖⁱ 20 sin(t/2) dt.",
+        formula: "L = ∫₀²ᵖⁱ 20 sin(t/2) dt = [ -40 cos(t/2) ]₀²ᵖⁱ = -40(-1 - 1) = 80.000000",
         a: 0,
-        b: 12,
+        b: 2 * Math.PI,
         n: 6,
-        func: (y) => 0.8 * y * Math.pow(Math.max(0, 12 - y), 0.8)
+        func: (t) => 20 * Math.sin(t / 2),
+        exactValue: 80.000000,
+        isTabular: false
       },
       25: {
-        title: "Ejercicio 25: Trabajo de Deformación en Resorte No Lineal",
-        unit: "J (Joules)",
-        yLabel: "Fuerza restauradora F(x) [N]",
-        context: "Un amortiguador elastomérico utilizado en suspensiones mecánicas presenta rigidez no lineal gobernada por la relación de Duffing: F(x) = 250·x + 900·x³ (N). El trabajo mecánico almacenado al deformarlo desde x = 0 hasta x = 0.6 m es W = ∫₀⁰·⁶ F(x) dx.",
-        formula: "W = ∫₀⁰·⁶ (250 x + 900 x³) dx = [ 125 x² + 225 x⁴ ]₀⁰·⁶ = 74.160000 J",
-        exactValue: 125 * Math.pow(0.6, 2) + 225 * Math.pow(0.6, 4), // 45 + 29.16 = 74.16
+        title: "Ejercicio 25: Energía Gravitatoria - Potencial de Satélite a 800 km",
+        unit: "J (Joules) [3.486237 GJ]",
+        xLabel: "Altitud sobre superficie terrestre y [m]",
+        yLabel: "Fuerza F(y) [N]",
+        context: "Estimar la variación de energía potencial de un satélite de 500 kg elevado a 800 km. Integral a resolver: ΔU = ∫₀⁸⁰⁰⁰⁰⁰ [ (500 · 9.81 · 6371000²) / (6371000 + y)² ] dy.",
+        formula: "ΔU = ∫₀⁸⁰⁰⁰⁰⁰ [ (500 · 9.81 · 6371000²) / (6371000 + y)² ] dy ≈ 3.486237 × 10⁹ J",
         a: 0,
-        b: 0.6,
+        b: 800000,
         n: 6,
-        func: (x) => 250 * x + 900 * Math.pow(x, 3)
+        func: (y) => (500 * 9.81 * Math.pow(6371000, 2)) / Math.pow(6371000 + y, 2),
+        exactValue: (500 * 9.81 * Math.pow(6371000, 2)) * (1 / 6371000 - 1 / 7171000),
+        isTabular: false
       },
       26: {
-        title: "Ejercicio 26: Transferencia de Calor Transitoria en Disipador",
-        unit: "kJ",
-        yLabel: "Tasa térmica q̇(t) [kW]",
-        context: "En termotecnia, la energía calorífica total transferida por convección y radiación desde un componente electrónico durante el enfriamiento transitorio en 60 segundos es Q = ∫₀⁶⁰ q̇(t) dt, donde la potencia térmica es q̇(t) = 40·e^(-0.035 t) + 8 (kW).",
-        formula: "Q = ∫₀⁶⁰ [ 40 e⁻⁰·⁰³⁵ᵗ + 8 ] dt = [ -(40/0.035) e⁻⁰·⁰³⁵ᵗ + 8t ]₀⁶⁰ ≈ 1482.906939 kJ",
-        exactValue: (40 / 0.035) * (1 - Math.exp(-0.035 * 60)) + 8 * 60, // 1482.906939
-        a: 0,
-        b: 60,
-        n: 6,
-        func: (t) => 40 * Math.exp(-0.035 * t) + 8
+        title: "Ejercicio 26: Superficie de Lago - Área del Lago Erie",
+        unit: "mi² (millas cuadradas)",
+        xLabel: "Distancia longitudinal x [mi]",
+        yLabel: "Anchura w(x) [mi]",
+        context: "Estimar el área del lago Erie a partir de anchuras medidas cada 20 millas, desde x = 40 hasta x = 260.",
+        formula: "A = ∫₄₀²⁶⁰ w(x) dx  [x en mi, w en mi, h = 20 mi, n = 11 tramos]",
+        fixedX: [40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260],
+        fixedY: [0, 38, 42, 47, 52, 57, 54, 46, 38, 28, 15, 0],
+        exactValue: 8363.333333, // Por Regla Combinada Simpson (1/3 en [40,200] + 3/8 en [200,260])
+        isTabular: true
       },
       27: {
-        title: "Ejercicio 27: Carga Eléctrica Acumulada en Circuito RLC",
-        unit: "C (Culombios)",
-        yLabel: "Corriente eléctrica i(t) [A]",
-        context: "En ingeniería eléctrica, la carga total transferida a un condensador en el intervalo de t = 0 a t = 0.06 s por una corriente oscilatoria amortiguada i(t) = 15·e^(-20 t)·sin(25π t) (A) se calcula como q = ∫₀⁰·⁰⁶ i(t) dt.",
-        formula: "q = ∫₀⁰·⁰⁶ [ 15 e⁻²⁰ᵗ sin(25π t) ] dt ≈ 0.193112 C",
-        exactValue: 0.193112, // Referencia analítica de Laplace / integración
-        a: 0,
-        b: 0.06,
-        n: 6,
-        func: (t) => 15 * Math.exp(-20 * t) * Math.sin(25 * Math.PI * t)
+        title: "Ejercicio 27: Geometría de Objeto Alargado - Volumen de un Balón",
+        unit: "in³ (pulgadas cúbicas)",
+        xLabel: "Eje longitudinal z [in]",
+        yLabel: "Área de sección transversal A(z) = π(d/2)² [in²]",
+        context: "Con datos de diámetro d, estimar el volumen de un balón: V = π ∫₀¹² (d/2)² dz = (π/4) ∫₀¹² d(z)² dz. Datos: z de 0 a 12 in, d = [0, 2.6, 3.2, 4.8, 5.6, 6.0, 6.2, 6.0, 5.6, 4.8, 3.3, 2.6, 0].",
+        formula: "V = π ∫₀¹² (d/2)² dz = (π/4) ∫₀¹² d² dz  [n = 12 tramos (par y múltiplo de 3)]",
+        fixedX: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        // A(z) = (pi/4) * d^2
+        fixedY: [
+          0,
+          (Math.PI / 4) * Math.pow(2.6, 2),
+          (Math.PI / 4) * Math.pow(3.2, 2),
+          (Math.PI / 4) * Math.pow(4.8, 2),
+          (Math.PI / 4) * Math.pow(5.6, 2),
+          (Math.PI / 4) * Math.pow(6.0, 2),
+          (Math.PI / 4) * Math.pow(6.2, 2),
+          (Math.PI / 4) * Math.pow(6.0, 2),
+          (Math.PI / 4) * Math.pow(5.6, 2),
+          (Math.PI / 4) * Math.pow(4.8, 2),
+          (Math.PI / 4) * Math.pow(3.3, 2),
+          (Math.PI / 4) * Math.pow(2.6, 2),
+          0
+        ].map(v => parseFloat(v.toFixed(6))),
+        exactValue: 201.842092, // Simpson 1/3 compuesto sobre todos los 12 tramos
+        isTabular: true
       },
-      // Módulo de validación exigido en los requerimientos
       validation: {
-        title: "Módulo de Validación: Función f(x) = x² en el intervalo [0, 2]",
+        title: "Módulo de Validación Oficial: Función f(x) = x² en [0, 2]",
         unit: "unidades de área",
+        xLabel: "Abscisa x",
         yLabel: "f(x) = x²",
-        context: "Módulo de verificación teórica obligatoria: Para f(x) = x² en [0, 2], la integral analítica exacta es I = ∫₀² x² dx = [ x³/3 ]₀² = 8/3 ≈ 2.66666667. Debido a que las reglas de Simpson son exactas para polinomios de grado hasta 3, tanto Simpson 1/3 como Simpson 3/8 deben dar exactamente 8/3 con error de truncamiento cero.",
-        formula: "I = ∫₀² x² dx = [ x³ / 3 ]₀² = 8/3 = 2.666667 (Exactitud analítica)",
-        exactValue: 8.0 / 3.0, // 2.6666666666666665
+        context: "Módulo de verificación teórica obligatoria: Para f(x) = x² en [0, 2], la integral analítica exacta es I = ∫₀² x² dx = [ x³/3 ]₀² = 8/3 ≈ 2.66666667. Debido a que las reglas de Simpson integran polinomios de grado hasta 3 con exactitud perfecta, Simpson 1/3 y Simpson 3/8 dan exactamente 8/3 con error de truncamiento 0.000000%.",
+        formula: "I = ∫₀² x² dx = [ x³ / 3 ]₀² = 8/3 = 2.666667 (Exactitud analítica garantizada)",
         a: 0,
         b: 2,
         n: 6,
-        func: (x) => x * x
+        func: (x) => x * x,
+        exactValue: 8.0 / 3.0,
+        isTabular: false
       }
     };
 
@@ -1087,7 +1107,7 @@
     }
 
     /**
-     * Cargar ejercicio en pantalla
+     * Cargar ejercicio en pantalla y ejecutar automáticamente el cálculo
      */
     function loadExercise(key) {
       currentExerciseKey = key;
@@ -1111,10 +1131,15 @@
       document.getElementById("yInputLabel").textContent = `Ordenadas ${ex.yLabel}:`;
       document.getElementById("thYLabel").textContent = ex.yLabel;
 
-      // Generar puntos iniciales con paso uniforme h
-      generateDataPoints(ex.a, ex.b, ex.n, ex.func);
+      // Cargar datos en los textarea
+      if (ex.fixedX && ex.fixedY) {
+        document.getElementById("xInput").value = ex.fixedX.join(", ");
+        document.getElementById("yInput").value = ex.fixedY.join(", ");
+      } else {
+        generateDataPoints(ex.a, ex.b, ex.n, ex.func);
+      }
 
-      // Limpiar alertas previas y procesar cálculo
+      // Limpiar alertas previas y procesar cálculo automáticamente
       hideAlert();
       processNumericalIntegration();
     }
@@ -1127,7 +1152,7 @@
     }
 
     /**
-     * Genera datos equiespaciados y los coloca en los textarea
+     * Genera datos equiespaciados para ejercicios con funciones analíticas
      */
     function generateDataPoints(a, b, n, func) {
       const h = (b - a) / n;
@@ -1151,7 +1176,12 @@
     function resetCurrentExercise() {
       const ex = EXERCISES_DATABASE[currentExerciseKey];
       if (ex) {
-        generateDataPoints(ex.a, ex.b, ex.n, ex.func);
+        if (ex.fixedX && ex.fixedY) {
+          document.getElementById("xInput").value = ex.fixedX.join(", ");
+          document.getElementById("yInput").value = ex.fixedY.join(", ");
+        } else {
+          generateDataPoints(ex.a, ex.b, ex.n, ex.func);
+        }
         hideAlert();
         processNumericalIntegration();
       }
@@ -1162,13 +1192,13 @@
      */
     function formatCleanNumber(num) {
       if (Math.abs(num) < 1e-12) return "0";
-      const str = num.toFixed(6);
+      const str = num.toFixed(8);
       return parseFloat(str).toString();
     }
 
     /**
      * =========================================================================
-     * VALIDACIÓN Y MANEJO DE ERRORES ESTRICTO (LO QUE NO DEBE PROCESAR)
+     * VALIDACIÓN Y MANEJO DE ERRORES ESTRICTO
      * =========================================================================
      */
     function parseAndValidateInputs() {
@@ -1261,7 +1291,7 @@
 
     /**
      * =========================================================================
-     * PROCESAMIENTO NUMÉRICO PRINCIPAL: SIMPSON 1/3 Y SIMPSON 3/8
+     * PROCESAMIENTO NUMÉRICO PRINCIPAL: SIMPSON 1/3, SIMPSON 3/8 Y REGLA COMBINADA
      * =========================================================================
      */
     function processNumericalIntegration() {
@@ -1278,19 +1308,44 @@
       const ex = EXERCISES_DATABASE[currentExerciseKey];
       const unit = ex ? ex.unit : "";
 
-      // Validar compatibilidad específica de 'n' para cada regla
+      // Validar compatibilidad específica de 'n'
       const is13Compatible = (n % 2 === 0);
       const is38Compatible = (n % 3 === 0);
 
-      // Si ninguna de las dos es compatible, alertar
+      // Calcular Regla Combinada si n no es divisible por ambos
+      let combinedResult = null;
+      let combinedExplanation = "";
+      if (n >= 5 && (!is13Compatible || !is38Compatible)) {
+        // Por ejemplo, para n impar: 1/3 en primeros (n-3) tramos + 3/8 en últimos 3 tramos
+        let n13 = is13Compatible ? n : (n - 3);
+        let sum13 = 0;
+        for (let i = 0; i <= n13; i++) {
+          let w = (i === 0 || i === n13) ? 1 : (i % 2 !== 0 ? 4 : 2);
+          sum13 += w * yVals[i];
+        }
+        let part13 = (h / 3.0) * sum13;
+
+        let sum38 = 0;
+        for (let i = n13; i <= n; i++) {
+          let localIdx = i - n13;
+          let w = (localIdx === 0 || localIdx === 3) ? 1 : 3;
+          sum38 += w * yVals[i];
+        }
+        let part38 = (3.0 * h / 8.0) * sum38;
+
+        combinedResult = part13 + part38;
+        combinedExplanation = `Regla Combinada: Simpson 1/3 en primeros ${n13} tramos (${part13.toFixed(6)}) + Simpson 3/8 en últimos 3 tramos (${part38.toFixed(6)}) = ${combinedResult.toFixed(6)} ${unit}`;
+      }
+
+      // Alertas según compatibilidad de n
       if (!is13Compatible && !is38Compatible) {
-        showError(`Incompatibilidad de subintervalos: El número actual de subintervalos es n = ${n}. Simpson 1/3 requiere n par, y Simpson 3/8 requiere n múltiplo de 3. Ningún método puede ejecutarse.`);
+        showWarning(`Atención: n = ${n} no es par (incompatible con Simpson 1/3 puro) ni múltiplo de 3 (incompatible con Simpson 3/8 puro). Se presenta la evaluación en subintervalos válidos y la Regla Combinada oficial (1/3 + 3/8).`);
       } else if (!is13Compatible) {
-        showWarning(`Atención: n = ${n} es impar. La regla de Simpson 1/3 requiere n par (bloqueada). Sin embargo, Simpson 3/8 ${is38Compatible ? 'es compatible y ha sido calculada con éxito.' : 'también está bloqueada.'}`);
+        showWarning(`Atención: n = ${n} es impar (Simpson 1/3 requiere n par). Simpson 3/8 es compatible y cubre todo el intervalo.`);
       } else if (!is38Compatible) {
-        showWarning(`Atención: n = ${n} no es múltiplo de 3. La regla de Simpson 3/8 requiere n divisible por 3 (bloqueada). Simpson 1/3 es compatible y ha sido calculada con éxito.`);
+        showWarning(`Atención: n = ${n} no es múltiplo de 3 (Simpson 3/8 requiere n divisible por 3). Simpson 1/3 es compatible y cubre todo el intervalo.`);
       } else {
-        showSuccess(`Datos validados correctamente: n = ${n} subintervalos con espaciamiento uniforme h = ${h.toFixed(6)}. Compatible con ambas reglas.`);
+        showSuccess(`Datos validados correctamente: n = ${n} subintervalos con paso uniforme h = ${h.toFixed(6)}. Compatible con ambas reglas.`);
       }
 
       // CÁLCULO DE SIMPSON 1/3
@@ -1299,21 +1354,23 @@
       if (is13Compatible) {
         let sum13 = 0;
         for (let i = 0; i <= n; i++) {
-          let w = 0;
-          if (i === 0 || i === n) {
-            w = 1;
-          } else if (i % 2 !== 0) {
-            w = 4;
-          } else {
-            w = 2;
-          }
+          let w = (i === 0 || i === n) ? 1 : (i % 2 !== 0 ? 4 : 2);
           weights13[i] = w;
           sum13 += w * yVals[i];
         }
         simp13Result = (h / 3.0) * sum13;
         displaySimpson13Success(simp13Result, h, n, sum13, unit, ex);
       } else {
-        displaySimpson13Blocked(n);
+        // Evaluar Simpson 1/3 en los primeros n-1 tramos (que son pares)
+        const nPar = n - 1;
+        let sumPar = 0;
+        for (let i = 0; i <= nPar; i++) {
+          let w = (i === 0 || i === nPar) ? 1 : (i % 2 !== 0 ? 4 : 2);
+          weights13[i] = w;
+          sumPar += w * yVals[i];
+        }
+        const partial13 = (h / 3.0) * sumPar;
+        displaySimpson13Partial(partial13, combinedResult, combinedExplanation, h, n, nPar, unit, ex);
       }
 
       // CÁLCULO DE SIMPSON 3/8
@@ -1322,35 +1379,36 @@
       if (is38Compatible) {
         let sum38 = 0;
         for (let i = 0; i <= n; i++) {
-          let w = 0;
-          if (i === 0 || i === n) {
-            w = 1;
-          } else if (i % 3 === 0) {
-            w = 2;
-          } else {
-            w = 3;
-          }
+          let w = (i === 0 || i === n) ? 1 : (i % 3 === 0 ? 2 : 3);
           weights38[i] = w;
           sum38 += w * yVals[i];
         }
         simp38Result = (3.0 * h / 8.0) * sum38;
         displaySimpson38Success(simp38Result, h, n, sum38, unit, ex);
       } else {
-        displaySimpson38Blocked(n);
+        // Evaluar Simpson 3/8 en el mayor múltiplo de 3 disponible
+        const nMult3 = Math.floor(n / 3) * 3;
+        let sumMult3 = 0;
+        for (let i = 0; i <= nMult3; i++) {
+          let w = (i === 0 || i === nMult3) ? 1 : (i % 3 === 0 ? 2 : 3);
+          weights38[i] = w;
+          sumMult3 += w * yVals[i];
+        }
+        const partial38 = (3.0 * h / 8.0) * sumMult3;
+        displaySimpson38Partial(partial38, combinedResult, combinedExplanation, h, n, nMult3, unit, ex);
       }
 
       // Rellenar tabla comparativa de factores y pesos
-      populateWeightsTable(xVals, yVals, weights13, weights38, is13Compatible, is38Compatible);
+      populateWeightsTable(xVals, yVals, weights13, weights38, is13Compatible, is38Compatible, n);
 
       // Actualizar Gráfico
       updateChart(xVals, yVals, ex.title);
     }
 
     /**
-     * Muestra resultados de Simpson 1/3 con mínimo 6 decimales
+     * Muestra resultados de Simpson 1/3 (caso compatible)
      */
     function displaySimpson13Success(result, h, n, sumW, unit, ex) {
-      const card = document.getElementById("cardSimp13");
       const badge = document.getElementById("badgeSimp13");
       const step = document.getElementById("stepSimp13");
       const valStr = document.getElementById("valSimp13");
@@ -1362,7 +1420,7 @@
 
       step.innerHTML = `
         Fórmula: I = (h/3) · [ y₀ + 4∑y_impares + 2∑y_pares + yₙ ]<br>
-        Multiplicador h/3 = <span class="highlight-val">${(h/3).toFixed(6)}</span> | Suma ponderada = <span class="highlight-val">${sumW.toFixed(6)}</span>
+        Paso h = ${h.toFixed(6)} | Multiplicador h/3 = <span class="highlight-val">${(h/3).toFixed(6)}</span> | Suma ponderada = <span class="highlight-val">${sumW.toFixed(6)}</span>
       `;
 
       valStr.textContent = result.toFixed(6);
@@ -1377,7 +1435,10 @@
       }
     }
 
-    function displaySimpson13Blocked(n) {
+    /**
+     * Muestra resultados de Simpson 1/3 (caso n impar: muestra evaluación parcial y combinada)
+     */
+    function displaySimpson13Partial(partialResult, combinedResult, combinedExpl, h, n, nPar, unit, ex) {
       const badge = document.getElementById("badgeSimp13");
       const step = document.getElementById("stepSimp13");
       const valStr = document.getElementById("valSimp13");
@@ -1385,16 +1446,30 @@
       const note = document.getElementById("noteSimp13");
 
       badge.className = "status-badge blocked";
-      badge.textContent = `BLOQUEADO (n=${n} impar)`;
+      badge.textContent = `REQUERIMIENTO: n=${n} (impar)`;
 
-      step.innerHTML = `<span style="color: #fca5a5;">Error: Simpson 1/3 exige un número PAR de subintervalos (actualmente n = ${n}). Para utilizar esta fórmula, el número de segmentos debe ser divisible entre 2.</span>`;
-      valStr.textContent = "BLOQUEADO";
-      unitStr.textContent = "";
-      note.textContent = "Cálculo no permitido por incompatibilidad matemática.";
+      const mainVal = combinedResult !== null ? combinedResult : partialResult;
+
+      step.innerHTML = `
+        <span style="color: #fbbf24;">⚠️ Nota: n = ${n} es impar. Simpson 1/3 estándar exige n par.</span><br>
+        &bull; <strong>Simpson 1/3 en primeros ${nPar} tramos:</strong> ${(h/3).toFixed(4)} · ∑wᵢyᵢ = <span class="highlight-val">${partialResult.toFixed(6)}</span> ${unit}<br>
+        ${combinedResult !== null ? `&bull; <strong>Regla Combinada (1/3 + 3/8 en ${n} tramos):</strong> <span class="highlight-val">${combinedResult.toFixed(6)}</span> ${unit}` : ''}
+      `;
+
+      valStr.textContent = mainVal.toFixed(6);
+      unitStr.textContent = unit;
+
+      if (ex && ex.exactValue !== undefined) {
+        const errorAbs = Math.abs(mainVal - ex.exactValue);
+        const errorRel = (errorAbs / Math.abs(ex.exactValue)) * 100;
+        note.innerHTML = `Valor Ref: <strong>${ex.exactValue.toFixed(6)}</strong> | Error relativo: <strong>${errorRel.toFixed(6)}%</strong>`;
+      } else {
+        note.textContent = "Resultado obtenido combinando Simpson 1/3 y Simpson 3/8 para cubrir el dominio completo.";
+      }
     }
 
     /**
-     * Muestra resultados de Simpson 3/8 con mínimo 6 decimales
+     * Muestra resultados de Simpson 3/8 (caso compatible)
      */
     function displaySimpson38Success(result, h, n, sumW, unit, ex) {
       const badge = document.getElementById("badgeSimp38");
@@ -1408,7 +1483,7 @@
 
       step.innerHTML = `
         Fórmula: I = (3h/8) · [ y₀ + 3∑(no múlt 3) + 2∑(múlt 3) + yₙ ]<br>
-        Multiplicador 3h/8 = <span class="highlight-val">${(3*h/8).toFixed(6)}</span> | Suma ponderada = <span class="highlight-val">${sumW.toFixed(6)}</span>
+        Paso h = ${h.toFixed(6)} | Multiplicador 3h/8 = <span class="highlight-val">${(3*h/8).toFixed(6)}</span> | Suma ponderada = <span class="highlight-val">${sumW.toFixed(6)}</span>
       `;
 
       valStr.textContent = result.toFixed(6);
@@ -1423,7 +1498,10 @@
       }
     }
 
-    function displaySimpson38Blocked(n) {
+    /**
+     * Muestra resultados de Simpson 3/8 (caso n no múltiplo de 3)
+     */
+    function displaySimpson38Partial(partialResult, combinedResult, combinedExpl, h, n, nMult3, unit, ex) {
       const badge = document.getElementById("badgeSimp38");
       const step = document.getElementById("stepSimp38");
       const valStr = document.getElementById("valSimp38");
@@ -1431,12 +1509,26 @@
       const note = document.getElementById("noteSimp38");
 
       badge.className = "status-badge blocked";
-      badge.textContent = `BLOQUEADO (n=${n} no múlt. 3)`;
+      badge.textContent = `REQUERIMIENTO: n=${n} (no múlt. 3)`;
 
-      step.innerHTML = `<span style="color: #fca5a5;">Error: Simpson 3/8 exige que el número de subintervalos sea MÚLTIPLO DE 3 (actualmente n = ${n}). Se requieren n = 3, 6, 9, 12, etc.</span>`;
-      valStr.textContent = "BLOQUEADO";
-      unitStr.textContent = "";
-      note.textContent = "Cálculo no permitido por incompatibilidad matemática.";
+      const mainVal = combinedResult !== null ? combinedResult : partialResult;
+
+      step.innerHTML = `
+        <span style="color: #fbbf24;">⚠️ Nota: n = ${n} no es múltiplo de 3. Simpson 3/8 estándar exige n = 3, 6, 9...</span><br>
+        &bull; <strong>Simpson 3/8 en primeros ${nMult3} tramos:</strong> ${(3*h/8).toFixed(4)} · ∑wᵢyᵢ = <span class="highlight-val">${partialResult.toFixed(6)}</span> ${unit}<br>
+        ${combinedResult !== null ? `&bull; <strong>Regla Combinada (1/3 + 3/8 en ${n} tramos):</strong> <span class="highlight-val">${combinedResult.toFixed(6)}</span> ${unit}` : ''}
+      `;
+
+      valStr.textContent = mainVal.toFixed(6);
+      unitStr.textContent = unit;
+
+      if (ex && ex.exactValue !== undefined) {
+        const errorAbs = Math.abs(mainVal - ex.exactValue);
+        const errorRel = (errorAbs / Math.abs(ex.exactValue)) * 100;
+        note.innerHTML = `Valor Ref: <strong>${ex.exactValue.toFixed(6)}</strong> | Error relativo: <strong>${errorRel.toFixed(6)}%</strong>`;
+      } else {
+        note.textContent = "Resultado obtenido combinando Simpson 1/3 y Simpson 3/8 para cubrir el dominio completo.";
+      }
     }
 
     function blockBothMethods(reason) {
@@ -1460,7 +1552,7 @@
     /**
      * LLENADO DE LA TABLA DE FACTORES / PESOS DE INTEGRACIÓN
      */
-    function populateWeightsTable(xVals, yVals, w13, w38, is13Ok, is38Ok) {
+    function populateWeightsTable(xVals, yVals, w13, w38, is13Ok, is38Ok, n) {
       const tbody = document.getElementById("weightsTableBody");
       tbody.innerHTML = "";
 
@@ -1473,13 +1565,13 @@
         const xi = xVals[i];
         const yi = yVals[i];
 
-        const w1 = is13Ok ? w13[i] : "-";
-        const prod1 = is13Ok ? (w13[i] * yi) : "-";
-        if (is13Ok) totalW13Prod += (w13[i] * yi);
+        const w1 = w13[i] !== 0 ? w13[i] : (is13Ok ? 0 : "-");
+        const prod1 = w13[i] !== 0 ? (w13[i] * yi) : (is13Ok ? 0 : "-");
+        if (typeof prod1 === 'number') totalW13Prod += prod1;
 
-        const w2 = is38Ok ? w38[i] : "-";
-        const prod2 = is38Ok ? (w38[i] * yi) : "-";
-        if (is38Ok) totalW38Prod += (w38[i] * yi);
+        const w2 = w38[i] !== 0 ? w38[i] : (is38Ok ? 0 : "-");
+        const prod2 = w38[i] !== 0 ? (w38[i] * yi) : (is38Ok ? 0 : "-");
+        if (typeof prod2 === 'number') totalW38Prod += prod2;
 
         tr.innerHTML = `
           <td><strong>${i}</strong></td>
@@ -1498,9 +1590,9 @@
       trTotal.className = "total-row";
       trTotal.innerHTML = `
         <td colspan="4" style="text-align: right; padding-right: 15px;">TOTAL SUMA PONDERADA (1/3):</td>
-        <td>${is13Ok ? totalW13Prod.toFixed(6) : "N/A"}</td>
+        <td>${totalW13Prod.toFixed(6)}</td>
         <td style="text-align: right;">(3/8):</td>
-        <td>${is38Ok ? totalW38Prod.toFixed(6) : "N/A"}</td>
+        <td>${totalW38Prod.toFixed(6)}</td>
       `;
       tbody.appendChild(trTotal);
     }
@@ -1624,48 +1716,41 @@
       if (!ex) return;
 
       if (type === 'unequal') {
-        // Longitudes desiguales
         document.getElementById("xInput").value = "0, 1, 2, 3, 4, 5";
         document.getElementById("yInput").value = "0, 1, 4, 9, 16";
       } else if (type === 'non-increasing') {
-        // Valores de x no crecientes
         document.getElementById("xInput").value = "0, 1, 2.5, 2.0, 4, 5";
         document.getElementById("yInput").value = "0, 1, 4, 9, 16, 25";
       } else if (type === 'non-numeric') {
-        // Datos no numéricos
         document.getElementById("xInput").value = "0, 1, dos, 3, 4, 5";
         document.getElementById("yInput").value = "0, 1, 4, 9, 16, 25";
       } else if (type === 'irregular-h') {
-        // Espaciamiento irregular en x
         document.getElementById("xInput").value = "0, 1, 2, 3.5, 5, 6.2";
         document.getElementById("yInput").value = "0, 1, 4, 12.25, 25, 38.44";
       } else if (type === 'odd-n') {
-        // n = 5 (impar) -> Bloquea Simpson 1/3
-        const a = ex.a, b = ex.b, n = 5;
+        const a = ex.a || 0, b = ex.b || 5, n = 5;
         const h = (b - a) / n;
         const xs = [], ys = [];
         for (let i = 0; i <= n; i++) {
           const x = a + i * h;
           xs.push(formatCleanNumber(x));
-          ys.push(formatCleanNumber(ex.func(x)));
+          ys.push(formatCleanNumber(ex.func ? ex.func(x) : Math.pow(x, 1.5)));
         }
         document.getElementById("xInput").value = xs.join(", ");
         document.getElementById("yInput").value = ys.join(", ");
       } else if (type === 'non-mod3-n') {
-        // n = 4 (no múltiplo de 3) -> Bloquea Simpson 3/8
-        const a = ex.a, b = ex.b, n = 4;
+        const a = ex.a || 0, b = ex.b || 4, n = 4;
         const h = (b - a) / n;
         const xs = [], ys = [];
         for (let i = 0; i <= n; i++) {
           const x = a + i * h;
           xs.push(formatCleanNumber(x));
-          ys.push(formatCleanNumber(ex.func(x)));
+          ys.push(formatCleanNumber(ex.func ? ex.func(x) : Math.pow(x, 1.5)));
         }
         document.getElementById("xInput").value = xs.join(", ");
         document.getElementById("yInput").value = ys.join(", ");
       }
 
-      // Ejecutar procesamiento para disparar la validación y alertas
       processNumericalIntegration();
     }
 
