@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serrano mamani Raquel Araceli DAT-242 - Integración Numérica</title>
+  
+  <!-- Google Fonts: Fuentes estilo pizarra, manuscrita y monoespaciada para datos numéricos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Fira+Code:wght@400;600;700&family=Patrick+Hand&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js para gráficos dinámicos con sombreado de área -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* ==========================================================================
+       VARIABLES Y TEMA DE PIZARRA ESCOLAR (CHALKBOARD THEME)
+       ========================================================================== */
+    :root {
+      --board-bg: #152720;
+      --board-bg-gradient: radial-gradient(circle at 50% 35%, #1d352b 0%, #13241d 75%, #0d1914 100%);
+      --chalk-white: #f5f7f6;
+      --chalk-yellow: #fff385;
+      --chalk-green: #98ffb3;
+      --chalk-blue: #a3e7fc;
+      --chalk-pink: #ffb8c6;
+      --chalk-orange: #ffd08a;
+      --chalk-dust: rgba(255, 255, 255, 0.07);
+      
+      --wood-frame-1: #5c341b;
+      --wood-frame-2: #3a1e0d;
+      --wood-bevel: #7a4625;
+      --wood-shadow: rgba(0, 0, 0, 0.65);
+      
+      --alert-error-bg: rgba(185, 28, 28, 0.25);
+      --alert-error-border: #f87171;
+      --alert-success-bg: rgba(22, 101, 52, 0.25);
+      --alert-success-border: #4ade80;
+      --alert-warn-bg: rgba(180, 83, 9, 0.25);
+      --alert-warn-border: #fbbf24;
+      
+      --font-chalk: 'Patrick Hand', 'Caveat', cursive, sans-serif;
+      --font-title: 'Architects Daughter', cursive, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #111413 radial-gradient(circle at center, #1c2220 0%, #0a0c0b 100%);
+      min-height: 100vh;
+      color: var(--chalk-white);
+      font-family: var(--font-chalk);
+      font-size: 19px;
+      line-height: 1.5;
+      padding: 20px 12px 60px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ==========================================================================
+       MARCO RÚSTICO DE MADERA DE LA PIZARRA
+       ========================================================================== */
+    .blackboard-frame {
+      width: 100%;
+      max-width: 1400px;
+      background: linear-gradient(135deg, var(--wood-bevel), var(--wood-frame-1) 30%, var(--wood-frame-2) 85%, #2b1407 100%);
+      padding: 22px;
+      border-radius: 18px;
+      box-shadow: 
+        0 20px 50px var(--wood-shadow),
+        inset 2px 2px 5px rgba(255, 255, 255, 0.25),
+        inset -3px -3px 7px rgba(0, 0, 0, 0.85);
+      position: relative;
+    }
+
+    /* Esquinas metálicas decorativas */
+    .blackboard-frame::before, .blackboard-frame::after {
+      content: '✛';
+      position: absolute;
+      font-size: 16px;
+      color: #9c7a52;
+      opacity: 0.8;
+      text-shadow: 1px 1px 2px black;
+    }
+    .blackboard-frame::before { top: 6px; left: 10px; }
+    .blackboard-frame::after { top: 6px; right: 10px; }
+
+    /* Superficie de la Pizarra */
+    .chalkboard-surface {
+      background: var(--board-bg-gradient);
+      border-radius: 10px;
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 
+        inset 0 0 45px rgba(0, 0, 0, 0.85),
+        inset 0 0 10px rgba(0, 0, 0, 0.9);
+      border: 3px solid #0f1c16;
+    }
+
+    /* Textura de polvo de tiza y cuadrícula matemática sutil */
+    .chalkboard-surface::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 40%, rgba(255, 255, 255, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.04) 0%, transparent 45%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .content-layer {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ==========================================================================
+       ENCABEZADO OBLIGATORIO Y TÍTULO
+       ========================================================================== */
+    .header-container {
+      text-align: center;
+      margin-bottom: 25px;
+      border-bottom: 2px dashed rgba(255, 255, 255, 0.25);
+      padding-bottom: 18px;
+    }
+
+    /* Requisito obligatorio: "Serrano mamani Raquel Araceli DAT-242" */
+    .mandatory-header {
+      font-family: var(--font-title);
+      font-size: 2.1rem;
+      color: var(--chalk-yellow);
+      letter-spacing: 1.5px;
+      text-shadow: 
+        0 0 2px rgba(255, 243, 133, 0.6),
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+      margin-bottom: 6px;
+    }
+
+    .app-subtitle {
+      font-size: 1.35rem;
+      color: var(--chalk-blue);
+      letter-spacing: 0.8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .app-subtitle span.badge-topic {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 2px 14px;
+      border-radius: 20px;
+      color: var(--chalk-white);
+      font-size: 1rem;
+    }
+
+    /* ==========================================================================
+       MENÚ DE NAVEGACIÓN (9 BOTONES DE EJERCICIOS + VALIDACIÓN)
+       ========================================================================== */
+    .nav-section {
+      margin-bottom: 26px;
+    }
+
+    .nav-label {
+      font-family: var(--font-title);
+      font-size: 1.25rem;
+      color: var(--chalk-orange);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .exercise-buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .btn-chalk {
+      font-family: var(--font-title);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--chalk-white);
+      border: 2px dashed rgba(255, 255, 255, 0.45);
+      border-radius: 8px;
+      padding: 10px 8px;
+      font-size: 1.15rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.4);
+      outline: none;
+    }
+
+    .btn-chalk:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--chalk-yellow);
+      color: var(--chalk-yellow);
+      transform: translateY(-2px);
+    }
+
+    .btn-chalk.active {
+      background: rgba(255, 243, 133, 0.18);
+      border: 2px solid var(--chalk-yellow);
+      color: var(--chalk-yellow);
+      font-weight: bold;
+      box-shadow: 0 0 14px rgba(255, 243, 133, 0.45);
+      transform: scale(1.03);
+    }
+
+    .btn-chalk.special-validation {
+      grid-column: 1 / -1;
+      background: rgba(152, 255, 179, 0.12);
+      border: 2px dashed var(--chalk-green);
+      color: var(--chalk-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 1.25rem;
+      padding: 12px;
+    }
+
+    .btn-chalk.special-validation:hover, .btn-chalk.special-validation.active {
+      background: rgba(152, 255, 179, 0.25);
+      border: 2px solid var(--chalk-green);
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(152, 255, 179, 0.5);
+    }
+
+    /* ==========================================================================
+       PANEL PRINCIPAL DE DETALLE DEL EJERCICIO
+       ========================================================================== */
+    .card-chalk {
+      background: rgba(0, 0, 0, 0.28);
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 22px;
+      box-shadow: 3px 4px 10px rgba(0, 0, 0, 0.4);
+      position: relative;
+    }
+
+    .card-title {
+      font-family: var(--font-title);
+      font-size: 1.6rem;
+      color: var(--chalk-yellow);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge-unit {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      background: rgba(163, 231, 252, 0.15);
+      border: 1px solid var(--chalk-blue);
+      color: var(--chalk-blue);
+      padding: 3px 12px;
+      border-radius: 6px;
+    }
+
+    .exercise-description {
+      font-size: 1.18rem;
+      color: var(--chalk-white);
+      margin-bottom: 14px;
+      line-height: 1.55;
+    }
+
+    .math-formula-box {
+      background: rgba(10, 20, 16, 0.7);
+      border-left: 4px solid var(--chalk-green);
+      padding: 12px 18px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 18px;
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      color: var(--chalk-green);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      overflow-x: auto;
+    }
+
+    /* ==========================================================================
+       SISTEMA DE CONTROL Y ENTRADA DE DATOS
+       ========================================================================== */
+    .data-control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .data-control-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .input-chalk-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .input-chalk-group label {
+      font-family: var(--font-title);
+      font-size: 1.15rem;
+      color: var(--chalk-orange);
+    }
+
+    .input-chalk-group textarea {
+      background: rgba(0, 0, 0, 0.5);
+      color: var(--chalk-white);
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      border-radius: 8px;
+      padding: 10px;
+      resize: vertical;
+      min-height: 75px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-chalk-group textarea:focus {
+      border-color: var(--chalk-yellow);
+      box-shadow: 0 0 8px rgba(255, 243, 133, 0.4);
+    }
+
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-top: 1px dashed rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-action {
+      font-family: var(--font-title);
+      font-size: 1.15rem;
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .btn-calculate {
+      background: #1b5e20;
+      color: #e8f5e9;
+      border: 2px solid #66bb6a;
+      box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+    }
+    .btn-calculate:hover {
+      background: #2e7d32;
+      box-shadow: 0 0 16px rgba(76, 175, 80, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .btn-reset {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--chalk-white);
+      border: 1.5px dashed rgba(255, 255, 255, 0.4);
+    }
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: var(--chalk-yellow);
+    }
+
+    .error-test-menu {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .error-test-menu span {
+      font-size: 0.95rem;
+      color: var(--chalk-pink);
+    }
+
+    .btn-test-err {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px dashed var(--chalk-pink);
+      color: var(--chalk-pink);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-test-err:hover {
+      background: rgba(239, 68, 68, 0.35);
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       ALERTAS Y MANEJO DE ERRORES VISIBLES
+       ========================================================================== */
+    .alert-banner {
+      display: none;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 1.15rem;
+      margin-bottom: 20px;
+      animation: shake 0.35s ease;
+      position: relative;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .alert-banner.visible {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .alert-banner.error {
+      background: var(--alert-error-bg);
+      border: 2px solid var(--alert-error-border);
+      color: #fecaca;
+    }
+
+    .alert-banner.warning {
+      background: var(--alert-warn-bg);
+      border: 2px solid var(--alert-warn-border);
+      color: #fde68a;
+    }
+
+    .alert-banner.success {
+      background: var(--alert-success-bg);
+      border: 2px solid var(--alert-success-border);
+      color: #bbf7d0;
+    }
+
+    .alert-icon {
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    /* ==========================================================================
+       HOJA DE CÁLCULO COMPARATIVA (SIMPSON 1/3 vs SIMPSON 3/8)
+       ========================================================================== */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 950px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .spreadsheet-card {
+      background: rgba(8, 16, 12, 0.65);
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6);
+    }
+
+    .spreadsheet-card.method-13 {
+      border-top: 5px solid var(--chalk-blue);
+    }
+
+    .spreadsheet-card.method-38 {
+      border-top: 5px solid var(--chalk-yellow);
+    }
+
+    .method-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+      padding-bottom: 8px;
+    }
+
+    .method-title {
+      font-family: var(--font-title);
+      font-size: 1.5rem;
+    }
+
+    .method-title.c-13 { color: var(--chalk-blue); }
+    .method-title.c-38 { color: var(--chalk-yellow); }
+
+    .status-badge {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .status-badge.ok {
+      background: rgba(74, 222, 128, 0.2);
+      border: 1px solid var(--alert-success-border);
+      color: #86efac;
+    }
+    .status-badge.blocked {
+      background: rgba(248, 113, 113, 0.2);
+      border: 1px solid var(--alert-error-border);
+      color: #fca5a5;
+    }
+
+    .calc-step {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      line-height: 1.5;
+    }
+
+    .calc-step .highlight-val {
+      color: var(--chalk-green);
+      font-weight: bold;
+    }
+
+    /* Caja de resultado final destacado */
+    .result-display-box {
+      background: linear-gradient(135deg, rgba(16, 37, 28, 0.8), rgba(6, 18, 13, 0.95));
+      border: 2px dashed rgba(255, 255, 255, 0.4);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .result-label {
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 4px;
+    }
+
+    .result-value-string {
+      font-family: var(--font-mono);
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .method-13 .result-value-string { color: var(--chalk-blue); text-shadow: 0 0 12px rgba(163, 231, 252, 0.6); }
+    .method-38 .result-value-string { color: var(--chalk-yellow); text-shadow: 0 0 12px rgba(255, 243, 133, 0.6); }
+
+    .result-unit-string {
+      font-family: var(--font-chalk);
+      font-size: 1.25rem;
+      color: var(--chalk-orange);
+      margin-left: 6px;
+    }
+
+    .validation-note {
+      font-size: 1rem;
+      color: var(--chalk-green);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* ==========================================================================
+       TABLA DE FACTORES Y PESOS DE INTEGRACIÓN
+       ========================================================================== */
+    .table-section {
+      margin-bottom: 24px;
+    }
+
+    .table-title {
+      font-family: var(--font-title);
+      font-size: 1.45rem;
+      color: var(--chalk-green);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chalkboard-table-container {
+      overflow-x: auto;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 8px;
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+    }
+
+    table.chalk-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+    }
+
+    table.chalk-table th {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--chalk-yellow);
+      padding: 10px 12px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    table.chalk-table td {
+      padding: 8px 12px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+      white-space: nowrap;
+    }
+
+    table.chalk-table tr:hover td {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    table.chalk-table tr.total-row {
+      background: rgba(255, 255, 255, 0.08);
+      font-weight: bold;
+      border-top: 2px solid var(--chalk-green);
+    }
+
+    table.chalk-table tr.total-row td {
+      color: var(--chalk-green);
+      font-size: 1.05rem;
+    }
+
+    /* ==========================================================================
+       GRÁFICO INTERACTIVO CHART.JS
+       ========================================================================== */
+    .chart-section {
+      background: rgba(0, 0, 0, 0.35);
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 24px;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .chart-title {
+      font-family: var(--font-title);
+      font-size: 1.45rem;
+      color: var(--chalk-white);
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 380px;
+      width: 100%;
+    }
+
+    /* ==========================================================================
+       BANDEJA INFERIOR DE MADERA CON TIZAS Y BORRADOR
+       ========================================================================== */
+    .chalk-tray {
+      width: 96%;
+      height: 24px;
+      background: linear-gradient(to bottom, #4a2712, #291407);
+      margin: 15px auto 0 auto;
+      border-radius: 4px;
+      box-shadow: 
+        0 8px 15px rgba(0, 0, 0, 0.7),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 30px;
+      gap: 15px;
+      position: relative;
+    }
+
+    .chalk-stick {
+      width: 45px;
+      height: 10px;
+      border-radius: 3px;
+      box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+      transform: translateY(-2px);
+    }
+    .chalk-stick.white { background: #fdfdfd; }
+    .chalk-stick.yellow { background: #fef08a; }
+    .chalk-stick.blue { background: #7dd3fc; }
+    .chalk-stick.pink { background: #f472b6; }
+
+    .eraser {
+      width: 65px;
+      height: 14px;
+      background: linear-gradient(to bottom, #d2b48c, #8b4513 40%, #1f1f1f 45%, #111111);
+      border-radius: 3px;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+      transform: translateY(-4px);
+    }
+
+    /* ==========================================================================
+       PIE DE PÁGINA
+       ========================================================================== */
+    footer.app-footer {
+      margin-top: 25px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.05rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MARCO DE MADERA DE LA PIZARRA -->
+  <div class="blackboard-frame">
+    <div class="chalkboard-surface">
+      <div class="content-layer">
+
+        <!-- 1. ENCABEZADO PRINCIPAL OBLIGATORIO -->
+        <header class="header-container">
+          <h1 class="mandatory-header">Serrano mamani Raquel Araceli DAT-242</h1>
+          <div class="app-subtitle">
+            <span>Integración Numérica de Precisión</span>
+            <span class="badge-topic">Regla de Simpson 1/3 Compuesta</span>
+            <span class="badge-topic">Regla de Simpson 3/8 Compuesta</span>
+          </div>
+        </header>
+
+        <!-- 2. MENÚ DE NAVEGACIÓN: EJERCICIOS 19 AL 27 + VALIDACIÓN -->
+        <nav class="nav-section">
+          <div class="nav-label">
+            <span>📚 Seleccionar Problema de Estudio:</span>
+          </div>
+          <div class="exercise-buttons-grid" id="exerciseNavGrid">
+            <!-- Botones generados dinámicamente: Ejercicio 19 al 27 -->
+          </div>
+          <button class="btn-chalk special-validation" id="btnValidationModule" onclick="loadValidationExercise()">
+            <span>🧪 Módulo de Validación Oficial: f(x) = x² en [0, 2] ➔ Demostración Teórica I = 8/3 ≈ 2.666667</span>
+          </button>
+        </nav>
+
+        <!-- BANNER DE ALERTAS Y MANEJO DE ERRORES -->
+        <div id="alertBanner" class="alert-banner" role="alert">
+          <div class="alert-icon" id="alertIcon">⚠️</div>
+          <div class="alert-message" id="alertMessage"></div>
+        </div>
+
+        <!-- 3. DETALLE DEL EJERCICIO SELECCIONADO -->
+        <main class="card-chalk" id="exerciseCard">
+          <div class="card-title">
+            <span id="exerciseTitle">Ejercicio 19: Momento Flector en Viga</span>
+            <span class="badge-unit" id="exerciseUnitBadge">Unidad: kN·m</span>
+          </div>
+
+          <p class="exercise-description" id="exerciseContext">
+            Contexto del problema...
+          </p>
+
+          <div class="math-formula-box" id="exerciseFormulaBox">
+            <span id="formulaText">M = ∫₀¹¹ (5 + 0.25 x²) dx</span>
+          </div>
+
+          <!-- ENTRADA Y CONTROL DE DATOS INTERACTIVOS -->
+          <div class="data-control-grid">
+            <div class="input-chalk-group">
+              <label for="xInput">Abscisas x (separadas por coma o espacio):</label>
+              <textarea id="xInput" placeholder="Ej: 0, 1.833333, 3.666667, ..."></textarea>
+            </div>
+            <div class="input-chalk-group">
+              <label for="yInput" id="yInputLabel">Ordenadas f(x) / y (separadas por coma o espacio):</label>
+              <textarea id="yInput" placeholder="Ej: 5.0, 5.84, ..."></textarea>
+            </div>
+          </div>
+
+          <!-- BARRA DE ACCIÓN Y PRUEBA DE CASOS DE ERROR -->
+          <div class="controls-bar">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn-action btn-calculate" onclick="processNumericalIntegration()">
+                <span>▶ Calcular Integrales</span>
+              </button>
+              <button class="btn-action btn-reset" onclick="resetCurrentExercise()">
+                <span>🔄 Restablecer Datos</span>
+              </button>
+            </div>
+
+            <!-- Botones didácticos para forzar validación y pruebas de error -->
+            <div class="error-test-menu">
+              <span>Probar Errores:</span>
+              <button class="btn-test-err" onclick="injectTestError('unequal')">x / y Desiguales</button>
+              <button class="btn-test-err" onclick="injectTestError('non-increasing')">x No Creciente</button>
+              <button class="btn-test-err" onclick="injectTestError('non-numeric')">No Numérico</button>
+              <button class="btn-test-err" onclick="injectTestError('irregular-h')">h No Uniforme</button>
+              <button class="btn-test-err" onclick="injectTestError('odd-n')">n Impar (n=5)</button>
+              <button class="btn-test-err" onclick="injectTestError('non-mod3-n')">n no Múlt. 3 (n=4)</button>
+            </div>
+          </div>
+        </main>
+
+        <!-- 4. HOJA DE CÁLCULO COMPARATIVA: SIMPSON 1/3 vs SIMPSON 3/8 -->
+        <section class="comparison-grid">
+          
+          <!-- BLOQUE SIMPSON 1/3 -->
+          <div class="spreadsheet-card method-13" id="cardSimp13">
+            <div class="method-header">
+              <div class="method-title c-13">Regla de Simpson 1/3</div>
+              <span class="status-badge" id="badgeSimp13">Verificando...</span>
+            </div>
+            <div class="calc-step" id="stepSimp13">
+              Condición: Requiere que n sea <strong>par</strong>.
+            </div>
+            <div class="result-display-box">
+              <div class="result-label">Resultado Estimado (Simpson 1/3):</div>
+              <div>
+                <span class="result-value-string" id="valSimp13">---.------</span>
+                <span class="result-unit-string" id="unitSimp13"></span>
+              </div>
+              <div class="validation-note" id="noteSimp13"></div>
+            </div>
+          </div>
+
+          <!-- BLOQUE SIMPSON 3/8 -->
+          <div class="spreadsheet-card method-38" id="cardSimp38">
+            <div class="method-header">
+              <div class="method-title c-38">Regla de Simpson 3/8</div>
+              <span class="status-badge" id="badgeSimp38">Verificando...</span>
+            </div>
+            <div class="calc-step" id="stepSimp38">
+              Condición: Requiere que n sea <strong>múltiplo de 3</strong>.
+            </div>
+            <div class="result-display-box">
+              <div class="result-label">Resultado Estimado (Simpson 3/8):</div>
+              <div>
+                <span class="result-value-string" id="valSimp38">---.------</span>
+                <span class="result-unit-string" id="unitSimp38"></span>
+              </div>
+              <div class="validation-note" id="noteSimp38"></div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- 5. TABLA DE FACTORES Y PESOS DE INTEGRACIÓN -->
+        <section class="table-section">
+          <div class="table-title">
+            <span>📋 Tabla de Factores y Pesos de Ponderación Numérica:</span>
+          </div>
+          <div class="chalkboard-table-container">
+            <table class="chalk-table" id="weightsTable">
+              <thead>
+                <tr>
+                  <th>i</th>
+                  <th>xᵢ</th>
+                  <th id="thYLabel">f(xᵢ)</th>
+                  <th>Peso wᵢ (1/3)</th>
+                  <th>wᵢ · f(xᵢ) (1/3)</th>
+                  <th>Peso wᵢ (3/8)</th>
+                  <th>wᵢ · f(xᵢ) (3/8)</th>
+                </tr>
+              </thead>
+              <tbody id="weightsTableBody">
+                <!-- Filas generadas dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6. GRÁFICO DINÁMICO DE LA CURVA Y ÁREA BAJO LA CURVA -->
+        <section class="chart-section">
+          <div class="chart-header">
+            <div class="chart-title" id="chartHeading">Curva y Área de Integración Numérica Estimada</div>
+            <div style="font-size: 0.95rem; color: var(--chalk-yellow);">
+              Área sombreada bajo la curva interpolada
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="integrationChart"></canvas>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- BANDEJA DE MADERA CON TIZAS Y BORRADOR -->
+    <div class="chalk-tray">
+      <div class="chalk-stick white" title="Tiza blanca"></div>
+      <div class="chalk-stick yellow" title="Tiza amarilla"></div>
+      <div class="chalk-stick blue" title="Tiza azul"></div>
+      <div class="chalk-stick pink" title="Tiza rosa"></div>
+      <div class="eraser" title="Borrador de fieltro para pizarra"></div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <p>DAT-242 Métodos Numéricos &bull; Aplicación Web de Integración de Newton-Cotes (Simpson 1/3 y 3/8)</p>
+  </footer>
+
+  <!-- ==========================================================================
+       LÓGICA JAVASCRIPT: DEFINICIÓN DE EJERCICIOS, ALGORITMOS Y VALIDACIÓN
+       ========================================================================== -->
+  <script>
+    /**
+     * DEFINICIÓN DE LA BASE DE DATOS DE EJERCICIOS (19 AL 27) Y MÓDULO DE VALIDACIÓN
+     * Cada ejercicio cuenta con:
+     * - id, nombre, contexto físico real de ingeniería
+     * - fórmula LaTeX/texto
+     * - unidades físicas
+     * - datos equiespaciados compatibles por defecto con n=6 (múltiplo de 2 y 3)
+     * - valor analítico o de referencia para contrastar precisión con >= 6 decimales.
+     */
+    const EXERCISES_DATABASE = {
+      19: {
+        title: "Ejercicio 19: Momento Flector en Viga por Fuerza Cortante",
+        unit: "kN·m",
+        yLabel: "Fuerza Cortante V(x) [kN]",
+        context: "En ingeniería estructural, una viga de 11 m de longitud está sometida a una carga distribuida. La fuerza cortante está descrita por V(x) = 5 + 0.25 x² (kN). Sabiendo que dM/dx = V(x), el momento flexionante total se obtiene por integración definida: M = M₀ + ∫₀¹¹ V(x) dx, con M₀ = 0.",
+        formula: "M = ∫₀¹¹ (5 + 0.25 x²) dx = [ 5x + (0.25/3)x³ ]₀¹¹ = 165.916667 kN·m",
+        exactValue: 5 * 11 + (0.25 / 3) * Math.pow(11, 3), // 165.91666666666666
+        a: 0,
+        b: 11,
+        n: 6,
+        func: (x) => 5 + 0.25 * x * x
+      },
+      20: {
+        title: "Ejercicio 20: Trabajo en Proceso Termodinámico de un Gas",
+        unit: "kJ",
+        yLabel: "Presión P(V) [kPa]",
+        context: "En termodinámica aplicada, el trabajo W realizado durante la expansión cuasiestática de un gas confinado en un cilindro se calcula integrando la presión respecto al volumen: W = ∫ P(V) dV. Para este proceso politrópico, el volumen varía de 1.0 m³ a 7.0 m³.",
+        formula: "W = ∫₁⁷ 350 · V⁻¹·² dV = [ -1750 · V⁻⁰·² ]₁⁷ = 564.180902 kJ",
+        exactValue: 1750 * (1 - Math.pow(7, -0.2)), // 564.1809015
+        a: 1.0,
+        b: 7.0,
+        n: 6,
+        func: (V) => 350 / Math.pow(V, 1.2)
+      },
+      21: {
+        title: "Ejercicio 21: Cinemática - Distancia Recorrida a partir de la Velocidad",
+        unit: "m",
+        yLabel: "Velocidad v(t) [m/s]",
+        context: "En dinámica vehicular, la distancia total s recorrida por un móvil en una fase de aceleración y frenado se obtiene integrando la función de velocidad respecto al tiempo: s = ∫₀¹² v(t) dt, donde v(t) = 3 + 2.5 t - 0.15 t² (m/s).",
+        formula: "s = ∫₀¹² (3 + 2.5 t - 0.15 t²) dt = [ 3t + 1.25 t² - 0.05 t³ ]₀¹² = 129.600000 m",
+        exactValue: 3 * 12 + 1.25 * Math.pow(12, 2) - 0.05 * Math.pow(12, 3), // 129.6
+        a: 0,
+        b: 12,
+        n: 6,
+        func: (t) => 3 + 2.5 * t - 0.15 * t * t
+      },
+      22: {
+        title: "Ejercicio 22: Masa Total de una Barra con Densidad Variable",
+        unit: "kg",
+        yLabel: "Densidad lineal λ(x) [kg/m]",
+        context: "Se requiere evaluar la masa total m de una barra prismática de longitud L = 6 m. La densidad volumétrica del material varía según ρ(x) = 2400 + 300√x (kg/m³) y el área de la sección recta transversal constante es Ac = 0.025 m², por lo que la densidad lineal es λ(x) = ρ(x)·Ac.",
+        formula: "m = ∫₀⁶ (60 + 7.5 √x) dx = [ 60x + 5 x^(3/2) ]₀⁶ = 433.484692 kg",
+        exactValue: 360 + 30 * Math.sqrt(6), // 433.48469228
+        a: 0,
+        b: 6,
+        n: 6,
+        func: (x) => 60 + 7.5 * Math.sqrt(x)
+      },
+      23: {
+        title: "Ejercicio 23: Flujo Vehicular en Hora Pico (Tráfico Urbano)",
+        unit: "vehículos",
+        yLabel: "Tasa de flujo q(t) [veh/min]",
+        context: "En ingeniería de transporte, el aforo de una intersección semaforizada durante un lapso de 90 minutos se modela a través de la tasa de flujo vehicular q(t) = 15 + 12·sin(π·t/90) + 4·cos(2π·t/90) (veh/min). El número total de vehículos que cruzaron la vía es N = ∫₀⁹⁰ q(t) dt.",
+        formula: "N = ∫₀⁹⁰ [ 15 + 12 sin(π t / 90) + 4 cos(2π t / 90) ] dt = 1350 + 2160/π = 2037.549354 vehículos",
+        exactValue: 1350 + 2160 / Math.PI, // 2037.549354
+        a: 0,
+        b: 90,
+        n: 6,
+        func: (t) => 15 + 12 * Math.sin(Math.PI * t / 90) + 4 * Math.cos(2 * Math.PI * t / 90)
+      },
+      24: {
+        title: "Ejercicio 24: Caudal Hidráulico en Canal de Sección Irregular",
+        unit: "m³/s",
+        yLabel: "Gasto unitario q_u(y) [m²/s]",
+        context: "En ingeniería hidráulica, el caudal total Q que fluye a través de la sección de un canal o río de ancho B = 12 m se calcula integrando el producto de la velocidad del agua por la profundidad local: Q = ∫₀¹² q_u(y) dy, con perfil parabólico amortiguado q_u(y) = 0.8·y·(12 - y)^0.8.",
+        formula: "Q = ∫₀¹² 0.8 · y · (12 - y)^0.8 dy ≈ 166.865648 m³/s",
+        exactValue: 166.865648, // Referencia numérica precisa de Gauss-Legendre
+        a: 0,
+        b: 12,
+        n: 6,
+        func: (y) => 0.8 * y * Math.pow(Math.max(0, 12 - y), 0.8)
+      },
+      25: {
+        title: "Ejercicio 25: Trabajo de Deformación en Resorte No Lineal",
+        unit: "J (Joules)",
+        yLabel: "Fuerza restauradora F(x) [N]",
+        context: "Un amortiguador elastomérico utilizado en suspensiones mecánicas presenta rigidez no lineal gobernada por la relación de Duffing: F(x) = 250·x + 900·x³ (N). El trabajo mecánico almacenado al deformarlo desde x = 0 hasta x = 0.6 m es W = ∫₀⁰·⁶ F(x) dx.",
+        formula: "W = ∫₀⁰·⁶ (250 x + 900 x³) dx = [ 125 x² + 225 x⁴ ]₀⁰·⁶ = 74.160000 J",
+        exactValue: 125 * Math.pow(0.6, 2) + 225 * Math.pow(0.6, 4), // 45 + 29.16 = 74.16
+        a: 0,
+        b: 0.6,
+        n: 6,
+        func: (x) => 250 * x + 900 * Math.pow(x, 3)
+      },
+      26: {
+        title: "Ejercicio 26: Transferencia de Calor Transitoria en Disipador",
+        unit: "kJ",
+        yLabel: "Tasa térmica q̇(t) [kW]",
+        context: "En termotecnia, la energía calorífica total transferida por convección y radiación desde un componente electrónico durante el enfriamiento transitorio en 60 segundos es Q = ∫₀⁶⁰ q̇(t) dt, donde la potencia térmica es q̇(t) = 40·e^(-0.035 t) + 8 (kW).",
+        formula: "Q = ∫₀⁶⁰ [ 40 e⁻⁰·⁰³⁵ᵗ + 8 ] dt = [ -(40/0.035) e⁻⁰·⁰³⁵ᵗ + 8t ]₀⁶⁰ ≈ 1482.906939 kJ",
+        exactValue: (40 / 0.035) * (1 - Math.exp(-0.035 * 60)) + 8 * 60, // 1482.906939
+        a: 0,
+        b: 60,
+        n: 6,
+        func: (t) => 40 * Math.exp(-0.035 * t) + 8
+      },
+      27: {
+        title: "Ejercicio 27: Carga Eléctrica Acumulada en Circuito RLC",
+        unit: "C (Culombios)",
+        yLabel: "Corriente eléctrica i(t) [A]",
+        context: "En ingeniería eléctrica, la carga total transferida a un condensador en el intervalo de t = 0 a t = 0.06 s por una corriente oscilatoria amortiguada i(t) = 15·e^(-20 t)·sin(25π t) (A) se calcula como q = ∫₀⁰·⁰⁶ i(t) dt.",
+        formula: "q = ∫₀⁰·⁰⁶ [ 15 e⁻²⁰ᵗ sin(25π t) ] dt ≈ 0.193112 C",
+        exactValue: 0.193112, // Referencia analítica de Laplace / integración
+        a: 0,
+        b: 0.06,
+        n: 6,
+        func: (t) => 15 * Math.exp(-20 * t) * Math.sin(25 * Math.PI * t)
+      },
+      // Módulo de validación exigido en los requerimientos
+      validation: {
+        title: "Módulo de Validación: Función f(x) = x² en el intervalo [0, 2]",
+        unit: "unidades de área",
+        yLabel: "f(x) = x²",
+        context: "Módulo de verificación teórica obligatoria: Para f(x) = x² en [0, 2], la integral analítica exacta es I = ∫₀² x² dx = [ x³/3 ]₀² = 8/3 ≈ 2.66666667. Debido a que las reglas de Simpson son exactas para polinomios de grado hasta 3, tanto Simpson 1/3 como Simpson 3/8 deben dar exactamente 8/3 con error de truncamiento cero.",
+        formula: "I = ∫₀² x² dx = [ x³ / 3 ]₀² = 8/3 = 2.666667 (Exactitud analítica)",
+        exactValue: 8.0 / 3.0, // 2.6666666666666665
+        a: 0,
+        b: 2,
+        n: 6,
+        func: (x) => x * x
+      }
+    };
+
+    let currentExerciseKey = 19;
+    let chartInstance = null;
+
+    /**
+     * Inicialización al cargar el documento
+     */
+    document.addEventListener("DOMContentLoaded", () => {
+      buildNavigationMenu();
+      loadExercise(19);
+    });
+
+    /**
+     * Construcción de los 9 botones de menú (Ejercicio 19 al 27)
+     */
+    function buildNavigationMenu() {
+      const navGrid = document.getElementById("exerciseNavGrid");
+      navGrid.innerHTML = "";
+      for (let i = 19; i <= 27; i++) {
+        const btn = document.createElement("button");
+        btn.className = "btn-chalk";
+        btn.id = `btnEx${i}`;
+        btn.textContent = `Ejercicio ${i}`;
+        btn.onclick = () => loadExercise(i);
+        navGrid.appendChild(btn);
+      }
+    }
+
+    /**
+     * Cargar ejercicio en pantalla
+     */
+    function loadExercise(key) {
+      currentExerciseKey = key;
+
+      // Actualizar estilo visual activo en botones
+      for (let i = 19; i <= 27; i++) {
+        const btn = document.getElementById(`btnEx${i}`);
+        if (btn) btn.classList.toggle("active", i === key);
+      }
+      const btnVal = document.getElementById("btnValidationModule");
+      if (btnVal) btnVal.classList.toggle("active", key === 'validation');
+
+      const ex = EXERCISES_DATABASE[key];
+      if (!ex) return;
+
+      // Actualizar encabezados y contexto
+      document.getElementById("exerciseTitle").textContent = ex.title;
+      document.getElementById("exerciseUnitBadge").textContent = `Unidad: ${ex.unit}`;
+      document.getElementById("exerciseContext").textContent = ex.context;
+      document.getElementById("formulaText").textContent = ex.formula;
+      document.getElementById("yInputLabel").textContent = `Ordenadas ${ex.yLabel}:`;
+      document.getElementById("thYLabel").textContent = ex.yLabel;
+
+      // Generar puntos iniciales con paso uniforme h
+      generateDataPoints(ex.a, ex.b, ex.n, ex.func);
+
+      // Limpiar alertas previas y procesar cálculo
+      hideAlert();
+      processNumericalIntegration();
+    }
+
+    /**
+     * Carga del módulo de validación especial
+     */
+    function loadValidationExercise() {
+      loadExercise('validation');
+    }
+
+    /**
+     * Genera datos equiespaciados y los coloca en los textarea
+     */
+    function generateDataPoints(a, b, n, func) {
+      const h = (b - a) / n;
+      const xVals = [];
+      const yVals = [];
+
+      for (let i = 0; i <= n; i++) {
+        const x = a + i * h;
+        const y = func(x);
+        xVals.push(formatCleanNumber(x));
+        yVals.push(formatCleanNumber(y));
+      }
+
+      document.getElementById("xInput").value = xVals.join(", ");
+      document.getElementById("yInput").value = yVals.join(", ");
+    }
+
+    /**
+     * Restablece los datos del ejercicio actual a los originales
+     */
+    function resetCurrentExercise() {
+      const ex = EXERCISES_DATABASE[currentExerciseKey];
+      if (ex) {
+        generateDataPoints(ex.a, ex.b, ex.n, ex.func);
+        hideAlert();
+        processNumericalIntegration();
+      }
+    }
+
+    /**
+     * Formateo limpio para presentación inicial en inputs
+     */
+    function formatCleanNumber(num) {
+      if (Math.abs(num) < 1e-12) return "0";
+      const str = num.toFixed(6);
+      return parseFloat(str).toString();
+    }
+
+    /**
+     * =========================================================================
+     * VALIDACIÓN Y MANEJO DE ERRORES ESTRICTO (LO QUE NO DEBE PROCESAR)
+     * =========================================================================
+     */
+    function parseAndValidateInputs() {
+      const xRaw = document.getElementById("xInput").value;
+      const yRaw = document.getElementById("yInput").value;
+
+      // Tokenización por comas, espacios o saltos de línea
+      const xTokens = xRaw.trim().split(/[\s,]+/).filter(t => t.length > 0);
+      const yTokens = yRaw.trim().split(/[\s,]+/).filter(t => t.length > 0);
+
+      // Validación 1: Campos vacíos
+      if (xTokens.length === 0 || yTokens.length === 0) {
+        return {
+          valid: false,
+          error: "Los datos de entrada no pueden estar vacíos. Ingrese valores para 'x' e 'y'."
+        };
+      }
+
+      // Validación 2: Listas de longitud desigual
+      if (xTokens.length !== yTokens.length) {
+        return {
+          valid: false,
+          error: `Listas desiguales detectadas: Se ingresaron ${xTokens.length} valores en 'x' y ${yTokens.length} valores en 'y'. Ambas listas deben tener exactamente la misma cantidad de puntos.`
+        };
+      }
+
+      // Validación 3: Mínimo número de puntos (al menos 3 puntos, n >= 2)
+      if (xTokens.length < 3) {
+        return {
+          valid: false,
+          error: `Cantidad insuficiente de puntos: Se ingresaron ${xTokens.length} puntos. Las reglas de Simpson requieren como mínimo 3 puntos (n ≥ 2).`
+        };
+      }
+
+      // Validación 4: Datos no numéricos (NaN)
+      const xVals = [];
+      const yVals = [];
+      for (let i = 0; i < xTokens.length; i++) {
+        const vx = Number(xTokens[i]);
+        const vy = Number(yTokens[i]);
+
+        if (isNaN(vx)) {
+          return {
+            valid: false,
+            error: `Dato no numérico detectado en 'x': El valor "${xTokens[i]}" en la posición ${i + 1} no es un número válido.`
+          };
+        }
+        if (isNaN(vy)) {
+          return {
+            valid: false,
+            error: `Dato no numérico detectado en 'y': El valor "${yTokens[i]}" en la posición ${i + 1} no es un número válido.`
+          };
+        }
+        xVals.push(vx);
+        yVals.push(vy);
+      }
+
+      // Validación 5: Valores de 'x' estrictamente crecientes
+      for (let i = 0; i < xVals.length - 1; i++) {
+        if (xVals[i + 1] <= xVals[i]) {
+          return {
+            valid: false,
+            error: `Valores de 'x' no crecientes: El punto x[${i + 1}] = ${xVals[i + 1]} es menor o igual a x[${i}] = ${xVals[i]}. Las abscisas deben ser estrictamente crecientes (xᵢ₊₁ > xᵢ).`
+          };
+        }
+      }
+
+      // Validación 6: Espaciamiento h estrictamente uniforme
+      const h0 = xVals[1] - xVals[0];
+      const epsilon = 1e-4 * Math.max(1, Math.abs(h0)); // Tolerancia adaptativa
+      for (let i = 1; i < xVals.length - 1; i++) {
+        const hi = xVals[i + 1] - xVals[i];
+        if (Math.abs(hi - h0) > epsilon) {
+          return {
+            valid: false,
+            error: `Espaciamiento 'h' NO uniforme detectado: El salto entre x[${i}] (${xVals[i]}) y x[${i + 1}] (${xVals[i + 1]}) es h = ${hi.toFixed(6)}, el cual difiere del paso inicial h₀ = ${h0.toFixed(6)}. Las fórmulas estándar de Simpson 1/3 y 3/8 exigen espaciamiento uniforme. Cálculo bloqueado.`
+          };
+        }
+      }
+
+      const n = xVals.length - 1; // Número de subintervalos
+      return {
+        valid: true,
+        xVals,
+        yVals,
+        h: h0,
+        n
+      };
+    }
+
+    /**
+     * =========================================================================
+     * PROCESAMIENTO NUMÉRICO PRINCIPAL: SIMPSON 1/3 Y SIMPSON 3/8
+     * =========================================================================
+     */
+    function processNumericalIntegration() {
+      const validation = parseAndValidateInputs();
+
+      if (!validation.valid) {
+        showError(validation.error);
+        blockBothMethods(validation.error);
+        clearWeightsTable();
+        return;
+      }
+
+      const { xVals, yVals, h, n } = validation;
+      const ex = EXERCISES_DATABASE[currentExerciseKey];
+      const unit = ex ? ex.unit : "";
+
+      // Validar compatibilidad específica de 'n' para cada regla
+      const is13Compatible = (n % 2 === 0);
+      const is38Compatible = (n % 3 === 0);
+
+      // Si ninguna de las dos es compatible, alertar
+      if (!is13Compatible && !is38Compatible) {
+        showError(`Incompatibilidad de subintervalos: El número actual de subintervalos es n = ${n}. Simpson 1/3 requiere n par, y Simpson 3/8 requiere n múltiplo de 3. Ningún método puede ejecutarse.`);
+      } else if (!is13Compatible) {
+        showWarning(`Atención: n = ${n} es impar. La regla de Simpson 1/3 requiere n par (bloqueada). Sin embargo, Simpson 3/8 ${is38Compatible ? 'es compatible y ha sido calculada con éxito.' : 'también está bloqueada.'}`);
+      } else if (!is38Compatible) {
+        showWarning(`Atención: n = ${n} no es múltiplo de 3. La regla de Simpson 3/8 requiere n divisible por 3 (bloqueada). Simpson 1/3 es compatible y ha sido calculada con éxito.`);
+      } else {
+        showSuccess(`Datos validados correctamente: n = ${n} subintervalos con espaciamiento uniforme h = ${h.toFixed(6)}. Compatible con ambas reglas.`);
+      }
+
+      // CÁLCULO DE SIMPSON 1/3
+      let simp13Result = null;
+      let weights13 = new Array(xVals.length).fill(0);
+      if (is13Compatible) {
+        let sum13 = 0;
+        for (let i = 0; i <= n; i++) {
+          let w = 0;
+          if (i === 0 || i === n) {
+            w = 1;
+          } else if (i % 2 !== 0) {
+            w = 4;
+          } else {
+            w = 2;
+          }
+          weights13[i] = w;
+          sum13 += w * yVals[i];
+        }
+        simp13Result = (h / 3.0) * sum13;
+        displaySimpson13Success(simp13Result, h, n, sum13, unit, ex);
+      } else {
+        displaySimpson13Blocked(n);
+      }
+
+      // CÁLCULO DE SIMPSON 3/8
+      let simp38Result = null;
+      let weights38 = new Array(xVals.length).fill(0);
+      if (is38Compatible) {
+        let sum38 = 0;
+        for (let i = 0; i <= n; i++) {
+          let w = 0;
+          if (i === 0 || i === n) {
+            w = 1;
+          } else if (i % 3 === 0) {
+            w = 2;
+          } else {
+            w = 3;
+          }
+          weights38[i] = w;
+          sum38 += w * yVals[i];
+        }
+        simp38Result = (3.0 * h / 8.0) * sum38;
+        displaySimpson38Success(simp38Result, h, n, sum38, unit, ex);
+      } else {
+        displaySimpson38Blocked(n);
+      }
+
+      // Rellenar tabla comparativa de factores y pesos
+      populateWeightsTable(xVals, yVals, weights13, weights38, is13Compatible, is38Compatible);
+
+      // Actualizar Gráfico
+      updateChart(xVals, yVals, ex.title);
+    }
+
+    /**
+     * Muestra resultados de Simpson 1/3 con mínimo 6 decimales
+     */
+    function displaySimpson13Success(result, h, n, sumW, unit, ex) {
+      const card = document.getElementById("cardSimp13");
+      const badge = document.getElementById("badgeSimp13");
+      const step = document.getElementById("stepSimp13");
+      const valStr = document.getElementById("valSimp13");
+      const unitStr = document.getElementById("unitSimp13");
+      const note = document.getElementById("noteSimp13");
+
+      badge.className = "status-badge ok";
+      badge.textContent = `VÁLIDO (n=${n} par)`;
+
+      step.innerHTML = `
+        Fórmula: I = (h/3) · [ y₀ + 4∑y_impares + 2∑y_pares + yₙ ]<br>
+        Multiplicador h/3 = <span class="highlight-val">${(h/3).toFixed(6)}</span> | Suma ponderada = <span class="highlight-val">${sumW.toFixed(6)}</span>
+      `;
+
+      valStr.textContent = result.toFixed(6);
+      unitStr.textContent = unit;
+
+      if (ex && ex.exactValue !== undefined) {
+        const errorAbs = Math.abs(result - ex.exactValue);
+        const errorRel = (errorAbs / Math.abs(ex.exactValue)) * 100;
+        note.innerHTML = `Valor Teórico Ref: <strong>${ex.exactValue.toFixed(6)}</strong> | Error relativo: <strong>${errorRel.toFixed(6)}%</strong>`;
+      } else {
+        note.textContent = "Cálculo computado con 6 decimales de precisión.";
+      }
+    }
+
+    function displaySimpson13Blocked(n) {
+      const badge = document.getElementById("badgeSimp13");
+      const step = document.getElementById("stepSimp13");
+      const valStr = document.getElementById("valSimp13");
+      const unitStr = document.getElementById("unitSimp13");
+      const note = document.getElementById("noteSimp13");
+
+      badge.className = "status-badge blocked";
+      badge.textContent = `BLOQUEADO (n=${n} impar)`;
+
+      step.innerHTML = `<span style="color: #fca5a5;">Error: Simpson 1/3 exige un número PAR de subintervalos (actualmente n = ${n}). Para utilizar esta fórmula, el número de segmentos debe ser divisible entre 2.</span>`;
+      valStr.textContent = "BLOQUEADO";
+      unitStr.textContent = "";
+      note.textContent = "Cálculo no permitido por incompatibilidad matemática.";
+    }
+
+    /**
+     * Muestra resultados de Simpson 3/8 con mínimo 6 decimales
+     */
+    function displaySimpson38Success(result, h, n, sumW, unit, ex) {
+      const badge = document.getElementById("badgeSimp38");
+      const step = document.getElementById("stepSimp38");
+      const valStr = document.getElementById("valSimp38");
+      const unitStr = document.getElementById("unitSimp38");
+      const note = document.getElementById("noteSimp38");
+
+      badge.className = "status-badge ok";
+      badge.textContent = `VÁLIDO (n=${n} múlt. 3)`;
+
+      step.innerHTML = `
+        Fórmula: I = (3h/8) · [ y₀ + 3∑(no múlt 3) + 2∑(múlt 3) + yₙ ]<br>
+        Multiplicador 3h/8 = <span class="highlight-val">${(3*h/8).toFixed(6)}</span> | Suma ponderada = <span class="highlight-val">${sumW.toFixed(6)}</span>
+      `;
+
+      valStr.textContent = result.toFixed(6);
+      unitStr.textContent = unit;
+
+      if (ex && ex.exactValue !== undefined) {
+        const errorAbs = Math.abs(result - ex.exactValue);
+        const errorRel = (errorAbs / Math.abs(ex.exactValue)) * 100;
+        note.innerHTML = `Valor Teórico Ref: <strong>${ex.exactValue.toFixed(6)}</strong> | Error relativo: <strong>${errorRel.toFixed(6)}%</strong>`;
+      } else {
+        note.textContent = "Cálculo computado con 6 decimales de precisión.";
+      }
+    }
+
+    function displaySimpson38Blocked(n) {
+      const badge = document.getElementById("badgeSimp38");
+      const step = document.getElementById("stepSimp38");
+      const valStr = document.getElementById("valSimp38");
+      const unitStr = document.getElementById("unitSimp38");
+      const note = document.getElementById("noteSimp38");
+
+      badge.className = "status-badge blocked";
+      badge.textContent = `BLOQUEADO (n=${n} no múlt. 3)`;
+
+      step.innerHTML = `<span style="color: #fca5a5;">Error: Simpson 3/8 exige que el número de subintervalos sea MÚLTIPLO DE 3 (actualmente n = ${n}). Se requieren n = 3, 6, 9, 12, etc.</span>`;
+      valStr.textContent = "BLOQUEADO";
+      unitStr.textContent = "";
+      note.textContent = "Cálculo no permitido por incompatibilidad matemática.";
+    }
+
+    function blockBothMethods(reason) {
+      const b13 = document.getElementById("badgeSimp13");
+      const b38 = document.getElementById("badgeSimp38");
+      b13.className = "status-badge blocked";
+      b13.textContent = "BLOQUEADO";
+      b38.className = "status-badge blocked";
+      b38.textContent = "BLOQUEADO";
+
+      document.getElementById("stepSimp13").textContent = reason;
+      document.getElementById("stepSimp38").textContent = reason;
+
+      document.getElementById("valSimp13").textContent = "ERROR";
+      document.getElementById("valSimp38").textContent = "ERROR";
+
+      document.getElementById("noteSimp13").textContent = "Entrada inválida.";
+      document.getElementById("noteSimp38").textContent = "Entrada inválida.";
+    }
+
+    /**
+     * LLENADO DE LA TABLA DE FACTORES / PESOS DE INTEGRACIÓN
+     */
+    function populateWeightsTable(xVals, yVals, w13, w38, is13Ok, is38Ok) {
+      const tbody = document.getElementById("weightsTableBody");
+      tbody.innerHTML = "";
+
+      let totalW13Prod = 0;
+      let totalW38Prod = 0;
+
+      for (let i = 0; i < xVals.length; i++) {
+        const tr = document.createElement("tr");
+
+        const xi = xVals[i];
+        const yi = yVals[i];
+
+        const w1 = is13Ok ? w13[i] : "-";
+        const prod1 = is13Ok ? (w13[i] * yi) : "-";
+        if (is13Ok) totalW13Prod += (w13[i] * yi);
+
+        const w2 = is38Ok ? w38[i] : "-";
+        const prod2 = is38Ok ? (w38[i] * yi) : "-";
+        if (is38Ok) totalW38Prod += (w38[i] * yi);
+
+        tr.innerHTML = `
+          <td><strong>${i}</strong></td>
+          <td>${xi.toFixed(6)}</td>
+          <td>${yi.toFixed(6)}</td>
+          <td style="color: var(--chalk-blue); font-weight: bold;">${w1}</td>
+          <td>${typeof prod1 === 'number' ? prod1.toFixed(6) : prod1}</td>
+          <td style="color: var(--chalk-yellow); font-weight: bold;">${w2}</td>
+          <td>${typeof prod2 === 'number' ? prod2.toFixed(6) : prod2}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // Fila de Sumatoria Total
+      const trTotal = document.createElement("tr");
+      trTotal.className = "total-row";
+      trTotal.innerHTML = `
+        <td colspan="4" style="text-align: right; padding-right: 15px;">TOTAL SUMA PONDERADA (1/3):</td>
+        <td>${is13Ok ? totalW13Prod.toFixed(6) : "N/A"}</td>
+        <td style="text-align: right;">(3/8):</td>
+        <td>${is38Ok ? totalW38Prod.toFixed(6) : "N/A"}</td>
+      `;
+      tbody.appendChild(trTotal);
+    }
+
+    function clearWeightsTable() {
+      const tbody = document.getElementById("weightsTableBody");
+      tbody.innerHTML = `<tr><td colspan="7" style="color: #fca5a5; padding: 18px;">Tabla bloqueada debido a errores de validación en los datos.</td></tr>`;
+    }
+
+    /**
+     * =========================================================================
+     * GRÁFICO DINÁMICO CHART.JS CON ESTILO PIZARRA
+     * =========================================================================
+     */
+    function updateChart(xVals, yVals, title) {
+      const ctx = document.getElementById("integrationChart").getContext("2d");
+
+      // Gradiente suave de sombreado bajo la curva
+      const gradient = ctx.createLinearGradient(0, 0, 0, 350);
+      gradient.addColorStop(0, "rgba(152, 255, 179, 0.45)");
+      gradient.addColorStop(0.7, "rgba(152, 255, 179, 0.15)");
+      gradient.addColorStop(1, "rgba(152, 255, 179, 0.0)");
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: xVals.map(x => x.toFixed(4)),
+          datasets: [
+            {
+              label: 'Curva f(x) y Puntos de Integración',
+              data: yVals,
+              borderColor: '#fff385', // Amarillo tiza
+              backgroundColor: gradient,
+              borderWidth: 3,
+              pointBackgroundColor: '#98ffb3', // Verde tiza
+              pointBorderColor: '#ffffff',
+              pointRadius: 6,
+              pointHoverRadius: 9,
+              fill: true,
+              tension: 0.25 // Curva suave
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#f5f7f6',
+                font: {
+                  family: "'Patrick Hand', cursive",
+                  size: 16
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(10, 20, 15, 0.9)',
+              titleColor: '#fff385',
+              bodyColor: '#ffffff',
+              borderColor: '#98ffb3',
+              borderWidth: 1,
+              titleFont: { family: "'Fira Code', monospace" },
+              bodyFont: { family: "'Fira Code', monospace" },
+              callbacks: {
+                label: function(context) {
+                  return ` f(x) = ${context.parsed.y.toFixed(6)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Eje X (Abscisas)',
+                color: '#ffd08a',
+                font: { family: "'Architects Daughter', cursive", size: 16 }
+              },
+              ticks: {
+                color: '#f5f7f6',
+                font: { family: "'Fira Code', monospace", size: 12 }
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.08)',
+                drawBorder: false
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Eje Y (Ordenadas)',
+                color: '#ffd08a',
+                font: { family: "'Architects Daughter', cursive", size: 16 }
+              },
+              ticks: {
+                color: '#f5f7f6',
+                font: { family: "'Fira Code', monospace", size: 12 }
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.08)',
+                drawBorder: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * =========================================================================
+     * INYECCIÓN DIDÁCTICA DE ERRORES PARA PRUEBAS RÁPIDAS
+     * =========================================================================
+     */
+    function injectTestError(type) {
+      const ex = EXERCISES_DATABASE[currentExerciseKey];
+      if (!ex) return;
+
+      if (type === 'unequal') {
+        // Longitudes desiguales
+        document.getElementById("xInput").value = "0, 1, 2, 3, 4, 5";
+        document.getElementById("yInput").value = "0, 1, 4, 9, 16";
+      } else if (type === 'non-increasing') {
+        // Valores de x no crecientes
+        document.getElementById("xInput").value = "0, 1, 2.5, 2.0, 4, 5";
+        document.getElementById("yInput").value = "0, 1, 4, 9, 16, 25";
+      } else if (type === 'non-numeric') {
+        // Datos no numéricos
+        document.getElementById("xInput").value = "0, 1, dos, 3, 4, 5";
+        document.getElementById("yInput").value = "0, 1, 4, 9, 16, 25";
+      } else if (type === 'irregular-h') {
+        // Espaciamiento irregular en x
+        document.getElementById("xInput").value = "0, 1, 2, 3.5, 5, 6.2";
+        document.getElementById("yInput").value = "0, 1, 4, 12.25, 25, 38.44";
+      } else if (type === 'odd-n') {
+        // n = 5 (impar) -> Bloquea Simpson 1/3
+        const a = ex.a, b = ex.b, n = 5;
+        const h = (b - a) / n;
+        const xs = [], ys = [];
+        for (let i = 0; i <= n; i++) {
+          const x = a + i * h;
+          xs.push(formatCleanNumber(x));
+          ys.push(formatCleanNumber(ex.func(x)));
+        }
+        document.getElementById("xInput").value = xs.join(", ");
+        document.getElementById("yInput").value = ys.join(", ");
+      } else if (type === 'non-mod3-n') {
+        // n = 4 (no múltiplo de 3) -> Bloquea Simpson 3/8
+        const a = ex.a, b = ex.b, n = 4;
+        const h = (b - a) / n;
+        const xs = [], ys = [];
+        for (let i = 0; i <= n; i++) {
+          const x = a + i * h;
+          xs.push(formatCleanNumber(x));
+          ys.push(formatCleanNumber(ex.func(x)));
+        }
+        document.getElementById("xInput").value = xs.join(", ");
+        document.getElementById("yInput").value = ys.join(", ");
+      }
+
+      // Ejecutar procesamiento para disparar la validación y alertas
+      processNumericalIntegration();
+    }
+
+    /**
+     * =========================================================================
+     * GESTIÓN DE BANNERS DE ALERTA VISUAL
+     * =========================================================================
+     */
+    function showError(msg) {
+      const banner = document.getElementById("alertBanner");
+      banner.className = "alert-banner visible error";
+      document.getElementById("alertIcon").textContent = "🚫";
+      document.getElementById("alertMessage").innerHTML = `<strong>Error de Validación:</strong> ${msg}`;
+    }
+
+    function showWarning(msg) {
+      const banner = document.getElementById("alertBanner");
+      banner.className = "alert-banner visible warning";
+      document.getElementById("alertIcon").textContent = "⚠️";
+      document.getElementById("alertMessage").innerHTML = `<strong>Advertencia de Incompatibilidad:</strong> ${msg}`;
+    }
+
+    function showSuccess(msg) {
+      const banner = document.getElementById("alertBanner");
+      banner.className = "alert-banner visible success";
+      document.getElementById("alertIcon").textContent = "✅";
+      document.getElementById("alertMessage").innerHTML = `<strong>Validación Exitosa:</strong> ${msg}`;
+    }
+
+    function hideAlert() {
+      const banner = document.getElementById("alertBanner");
+      banner.className = "alert-banner";
+      banner.style.display = "none";
+    }
+  </script>
+</body>
+</html>
